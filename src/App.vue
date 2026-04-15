@@ -1,11 +1,16 @@
-<script setup></script>
+<script setup>
+import AppHeader from './components/AppHeader.vue'
+import CardList from './components/CardList.vue'
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
-</template>
+  <div class="w-4/5 mx-auto bg-white rounded-xl shadow-xl mt-14">
+    <AppHeader />
 
-<style scoped></style>
+    <div class="p-10">
+      <h1 class="text-3xl font-bold mb-10">Все кроссовки</h1>
+
+      <CardList />
+    </div>
+  </div>
+</template>
