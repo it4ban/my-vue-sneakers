@@ -1,6 +1,10 @@
 <script setup>
 import CardItem from './CardItem.vue'
 
+defineProps({
+  items: Array,
+})
+
 const onClickAdd = () => {
   alert('Добавить в корзину')
 }
@@ -13,9 +17,11 @@ const onClickFavorite = () => {
 <template>
   <div class="grid grid-cols-4 gap-5">
     <CardItem
-      image-url="/sneakers/sneakers-1.jpg"
-      title="Мужские Кроссовки Nike Blazer Mid Suede"
-      :price="5000"
+      v-for="item in items"
+      :key="item.id"
+      :title="item.title"
+      :image-url="item.imageUrl"
+      :price="item.price"
       :is-added="false"
       :is-favorite="false"
       @click-add="onClickAdd"
