@@ -1,9 +1,12 @@
 <script setup>
 import AppHeader from './components/AppHeader.vue'
 import CardList from './components/CardList.vue'
+import DrawerCart from './components/DrawerCart.vue'
 </script>
 
 <template>
+  <DrawerCart />
+
   <div class="w-4/5 mx-auto bg-white rounded-xl shadow-xl mt-14">
     <AppHeader />
 
