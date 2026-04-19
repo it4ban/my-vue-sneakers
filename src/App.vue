@@ -12,6 +12,7 @@ const cart = ref([])
 const drawerOpen = ref(false)
 
 const totalPrice = computed(() => cart.value.reduce((sum, item) => sum + item.price, 0))
+const vatPrice = computed(() => Math.round((totalPrice.value * 5) / 100))
 
 const closeDrawer = () => {
   drawerOpen.value = false
@@ -34,6 +35,13 @@ const addToCart = (item) => {
 const removeFromCart = (item) => {
   cart.value.splice(cart.value.indexOf(item), 1)
   item.isAdded = false
+}
+
+const createOrder = async () => {
+  try {
+  } catch (error) {
+    console.error('Error creating order:', error)
+  }
 }
 
 const onClickAddPlus = (item) => {
@@ -75,7 +83,7 @@ const addToFavorite = async (item) => {
   try {
     item.isFavorite = !item.isFavorite
 
-    if (!item.isFavorite) {
+    if (item.isFavorite) {
       const obj = {
         parentId: item.id,
       }
@@ -136,7 +144,7 @@ provide('card', {
 </script>
 
 <template>
-  <DrawerCart v-if="drawerOpen" />
+  <DrawerCart v-if="drawerOpen" :total-price="totalPrice" :vat-price="vatPrice" />
 
   <div class="w-4/5 mx-auto bg-white rounded-xl shadow-xl my-14">
     <AppHeader :total-price="totalPrice" @open-drawer="openDrawer" />
