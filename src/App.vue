@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { onMounted, reactive, ref, watch, provide } from 'vue'
 import axios from 'axios'
 
 import AppHeader from './components/AppHeader.vue'
@@ -21,6 +21,47 @@ const onChangeSearchInput = (event) => {
   filters.searchQuery = event.target.value
 }
 
+const fetchFavorites = async () => {
+  try {
+    const { data: favorites } = await axios.get('https://cca5a6a137f3ca08.mokky.dev/favorites')
+
+    items.value = items.value.map((item) => {
+      const favorite = favorites.find((fav) => fav.parentId === item.id)
+      if (!favorite) return item
+
+      return {
+        ...item,
+        isFavorite: true,
+        favoriteId: favorite.id,
+      }
+    })
+  } catch (err) {
+    console.error('Error fetching favorites:', err)
+  }
+}
+
+const addToFavorite = async (item) => {
+  try {
+    item.isFavorite = !item.isFavorite
+
+    if (!item.isFavorite) {
+      const obj = {
+        parentId: item.id,
+      }
+
+      const { data } = await axios.post('https://cca5a6a137f3ca08.mokky.dev/favorites', obj)
+
+      item.favoriteId = data.id
+    } else {
+      await axios.delete(`https://cca5a6a137f3ca08.mokky.dev/favorites/${item.favoriteId}`)
+
+      item.favoriteId = null
+    }
+  } catch (error) {
+    console.error('Error adding to favorites:', error)
+  }
+}
+
 const fetchItems = async () => {
   try {
     const params = {
@@ -35,14 +76,25 @@ const fetchItems = async () => {
       params,
     })
 
-    items.value = data
+    items.value = data.map((obj) => ({
+      ...obj,
+      isFavorite: false,
+      favoriteId: null,
+      isAdded: false,
+    }))
   } catch (err) {
     console.error('Error fetching items:', err)
   }
 }
 
-onMounted(fetchItems)
-watch(filters, fetchItems)
+onMounted(async () => {
+  await fetchItems()
+  await fetchFavorites()
+})
+watch(filters, async () => {
+  await fetchItems()
+  await fetchFavorites()
+})
 </script>
 
 <template>
@@ -79,7 +131,7 @@ watch(filters, fetchItems)
       </div>
 
       <div class="mt-10">
-        <CardList :items="items" />
+        <CardList :items="items" @addToFavorite="addToFavorite" />
       </div>
     </div>
   </div>
