@@ -8,11 +8,16 @@ import DrawerCart from './components/DrawerCart.vue'
 
 const items = ref([])
 const cart = ref([])
+const isCreatingOrder = ref(false)
 
 const drawerOpen = ref(false)
 
 const totalPrice = computed(() => cart.value.reduce((sum, item) => sum + item.price, 0))
 const vatPrice = computed(() => Math.round((totalPrice.value * 5) / 100))
+
+const cartIsEmpty = computed(() => cart.value.length === 0)
+
+const cartButtonDisabled = computed(() => isCreatingOrder.value || cartIsEmpty.value)
 
 const closeDrawer = () => {
   drawerOpen.value = false
@@ -39,8 +44,20 @@ const removeFromCart = (item) => {
 
 const createOrder = async () => {
   try {
+    isCreatingOrder.value = true
+
+    const { data } = await axios.post('https://cca5a6a137f3ca08.mokky.dev/orders', {
+      items: cart.value,
+      totalPrice: totalPrice.value,
+    })
+
+    cart.value = []
+
+    return data
   } catch (error) {
     console.error('Error creating order:', error)
+  } finally {
+    isCreatingOrder.value = false
   }
 }
 
@@ -127,13 +144,36 @@ const fetchItems = async () => {
 }
 
 onMounted(async () => {
+  const localCart = localStorage.getItem('cart')
+  cart.value = localCart ? JSON.parse(localCart) : []
+
   await fetchItems()
   await fetchFavorites()
+
+  items.value = items.value.map((item) => ({
+    ...item,
+    isAdded: cart.value.some((cartItem) => cartItem.id === item.id),
+  }))
 })
 watch(filters, async () => {
   await fetchItems()
   await fetchFavorites()
 })
+watch(cart, () => {
+  items.value = items.value.map((item) => ({
+    ...item,
+    isAdded: false,
+  }))
+})
+
+watch(
+  cart,
+  () => {
+    localStorage.setItem('cart', JSON.stringify(cart.value))
+  },
+  { deep: true },
+)
+
 provide('card', {
   cart,
   addToCart,
@@ -144,7 +184,13 @@ provide('card', {
 </script>
 
 <template>
-  <DrawerCart v-if="drawerOpen" :total-price="totalPrice" :vat-price="vatPrice" />
+  <DrawerCart
+    v-if="drawerOpen"
+    :total-price="totalPrice"
+    :vat-price="vatPrice"
+    @create-order="createOrder"
+    :button-disabled="cartButtonDisabled"
+  />
 
   <div class="w-4/5 mx-auto bg-white rounded-xl shadow-xl my-14">
     <AppHeader :total-price="totalPrice" @open-drawer="openDrawer" />

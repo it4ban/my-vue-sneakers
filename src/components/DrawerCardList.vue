@@ -2,7 +2,7 @@
 import { inject } from 'vue'
 import DrawerCard from './DrawerCard.vue'
 
-const { cart, addToCart, removeFromCart } = inject('card')
+const { cart, removeFromCart } = inject('card')
 </script>
 
 <template>
