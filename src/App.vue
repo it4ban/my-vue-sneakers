@@ -8,6 +8,16 @@ import DrawerCart from './components/DrawerCart.vue'
 
 const items = ref([])
 
+const drawerOpen = ref(false)
+
+const closeDrawer = () => {
+  drawerOpen.value = false
+}
+
+const openDrawer = () => {
+  drawerOpen.value = true
+}
+
 const filters = reactive({
   sortBy: 'title',
   searchQuery: '',
@@ -95,13 +105,17 @@ watch(filters, async () => {
   await fetchItems()
   await fetchFavorites()
 })
+provide('cardActions', {
+  closeDrawer,
+  openDrawer,
+})
 </script>
 
 <template>
-  <!-- <DrawerCart /> -->
+  <DrawerCart v-if="drawerOpen" />
 
   <div class="w-4/5 mx-auto bg-white rounded-xl shadow-xl my-14">
-    <AppHeader />
+    <AppHeader @open-drawer="openDrawer" />
 
     <div class="p-10">
       <div class="flex justify-between items-center">
@@ -131,7 +145,7 @@ watch(filters, async () => {
       </div>
 
       <div class="mt-10">
-        <CardList :items="items" @addToFavorite="addToFavorite" />
+        <CardList :items="items" @add-to-favorite="addToFavorite" />
       </div>
     </div>
   </div>
